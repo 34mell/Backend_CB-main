@@ -2,8 +2,11 @@ import type Usuario from "../Models/Usuario";
 import { UsuariosRepository } from "../Repositorio/UsuariosRepository";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
-const JWT_SECRET = "your-secret-key"; // In production, use environment variables
+dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 const usuariosRepository = new UsuariosRepository();
 
