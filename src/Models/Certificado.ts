@@ -5,7 +5,7 @@ export interface ICertificate extends Document {
   fileName: string;
   encryptionSalt: string;
   encryptionIV: string;
-  certificateData: string;
+  certificateData: Buffer;
   type?: string;
   createdAt: Date;
 }
@@ -15,10 +15,13 @@ const certificateSchema: Schema = new mongoose.Schema({
   fileName: { type: String, required: true },
   encryptionSalt: { type: String, required: true },
   encryptionIV: { type: String, required: true },
-  certificateData: { type: String, required: true },
+  certificateData: { type: Buffer, required: true },
   type: { type: String, default: "p12" },
   createdAt: { type: Date, default: Date.now },
 });
+
+// Para asegurar que cada usuario tenga un único certificado
+certificateSchema.index({ userId: 1 }, { unique: true });
 
 const Certificado = mongoose.model<ICertificate>(
   "Certificate",

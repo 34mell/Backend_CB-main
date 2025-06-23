@@ -119,3 +119,37 @@ export const login = async (req: any, res: any) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const verifySession = async (req: any, res: any) => {
+  try {
+    const userId = req.user.id;
+    
+    // Obtener los datos del usuario desde la base de datos
+    const users = await usuariosRepository.getUsuarios();
+    const user = users.find((u: Usuario) => u.id.toString() === userId.toString());
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Crear un nuevo token
+    const token = jwt.sign({ 
+      id: user.id,
+      rol: user.rol || 'user'
+    }, JWT_SECRET, { expiresIn: "1h" });
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        firstName: user.nombre,
+        lastName: user.apellido,
+        email: user.email,
+        rol: user.rol || 'user',
+      },
+    });
+  } catch (error) {
+    console.error('Error in session verification:', error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

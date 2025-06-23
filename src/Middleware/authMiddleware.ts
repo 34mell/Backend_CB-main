@@ -11,7 +11,7 @@ declare global {
   namespace Express {
     interface Request {
       user?: {
-        id: number;
+        id: string;
         rol?: 'user' | 'admin';
       };
     }
@@ -27,10 +27,16 @@ export const auth = (req: Request, res: Response, next: NextFunction): void => {
       res.status(401).json({ message: 'No token, authorization denied' });
       return;
     }
+    
     // Verificar el token JWT
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { id: number; rol?: 'user' | 'admin' };
-      req.user = decoded;
+      
+      req.user = {
+        id: decoded.id.toString(),
+        rol: decoded.rol || 'user'
+      };
+      
       next();
     } catch (err) {
       res.status(401).json({ message: 'Token is not valid' });
