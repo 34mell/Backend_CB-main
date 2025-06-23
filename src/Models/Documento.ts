@@ -17,7 +17,7 @@ const DocumentoSchema = new Schema<IDocumento>({
   tamano: { type: Number, required: true },
   tipo_archivo: { type: String, required: true },
   fecha_subida: { type: Date, default: Date.now },
-  usuario_id: { type: String, required: false },
+  usuario_id: { type: String, required: true },
 });
 
 export default model<IDocumento>('Doc', DocumentoSchema, 'Doc');

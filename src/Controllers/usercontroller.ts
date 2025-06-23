@@ -12,8 +12,8 @@ const usuariosRepository = new UsuariosRepository();
 
 export const register = async (req: any, res: any) => {
   try {
-    const { nombre, apellido, email, password } = req.body;
-    console.log('Received registration request:', { nombre, apellido, email, password: '***' });
+    const { nombre, apellido, email, password, rol } = req.body;
+    console.log('Received registration request:', { nombre, apellido, email, password: '***', rol });
 
     // Validate required fields
     if (!nombre || !apellido || !email || !password) {
@@ -33,6 +33,11 @@ export const register = async (req: any, res: any) => {
         }
       });
     }
+    
+    // Validar que el rol sea válido si se proporciona
+    if (rol && !['user', 'admin'].includes(rol)) {
+      return res.status(400).json({ message: "El rol debe ser 'user' o 'admin'" });
+    }
 
     // Check if user already exists in DB
     const existingUsers = await usuariosRepository.getUsuarios();
@@ -45,20 +50,20 @@ export const register = async (req: any, res: any) => {
     console.log('Hashing password...');
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    console.log('Password hashed successfully');
-
-    // Create new user in DB
+    console.log('Password hashed successfully'); 
     const newUser = await usuariosRepository.createUsuario({
       id: 0, // DB will auto-generate
       nombre,
       apellido,
       email,
       contraseña: hashedPassword,
+      rol: rol || 'user',
     });
-    console.log('User created successfully:', { id: newUser.id, email: newUser.email });
-
-    // Create and return JWT token
-    const token = jwt.sign({ id: newUser.id }, JWT_SECRET, { expiresIn: "1h" });
+    console.log('User created successfully:', { id: newUser.id, email: newUser.email });    // Create and return JWT token - incluir el rol en el token
+    const token = jwt.sign({ 
+      id: newUser.id,
+      rol: newUser.rol || 'user'
+    }, JWT_SECRET, { expiresIn: "1h" });
 
     res.status(201).json({
       token,
@@ -67,6 +72,7 @@ export const register = async (req: any, res: any) => {
         firstName: newUser.nombre,
         lastName: newUser.apellido,
         email: newUser.email,
+        rol: newUser.rol || 'user',
       },
     });
   } catch (error) {
@@ -93,9 +99,10 @@ export const login = async (req: any, res: any) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-
-    // Create and return JWT token
-    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ 
+      id: user.id,
+      rol: user.rol || 'user'
+    }, JWT_SECRET, { expiresIn: "1h" });
 
     res.json({
       token,
@@ -104,6 +111,7 @@ export const login = async (req: any, res: any) => {
         firstName: user.nombre,
         lastName: user.apellido,
         email: user.email,
+        rol: user.rol || 'user',
       },
     });
   } catch (error) {

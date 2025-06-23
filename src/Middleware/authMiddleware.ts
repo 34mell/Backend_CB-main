@@ -12,6 +12,7 @@ declare global {
     interface Request {
       user?: {
         id: number;
+        rol?: 'user' | 'admin';
       };
     }
   }
@@ -26,10 +27,9 @@ export const auth = (req: Request, res: Response, next: NextFunction): void => {
       res.status(401).json({ message: 'No token, authorization denied' });
       return;
     }
-
-    // Verificar el token
+    // Verificar el token JWT
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
+      const decoded = jwt.verify(token, JWT_SECRET) as { id: number; rol?: 'user' | 'admin' };
       req.user = decoded;
       next();
     } catch (err) {

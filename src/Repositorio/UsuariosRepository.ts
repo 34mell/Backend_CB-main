@@ -26,7 +26,6 @@ export class UsuariosRepository {
       throw error
     }
   }
-
   private async initializeTable() {
     try {
       await this.client.query(`
@@ -35,7 +34,8 @@ export class UsuariosRepository {
           nombre VARCHAR(255) NOT NULL,
           apellido VARCHAR(255) NOT NULL,
           email VARCHAR(255) UNIQUE NOT NULL,
-          contraseña VARCHAR(255) NOT NULL
+          contraseña VARCHAR(255) NOT NULL,
+          rol VARCHAR(50) DEFAULT 'user'
         )
       `)
       console.log('Table usuarios has been initialized')
@@ -68,14 +68,12 @@ export class UsuariosRepository {
       throw error
     }
   }
-
   async createUsuario(usuario: Usuario) {
     try {
-
         console.log('Creating new usuario:', { ...usuario, contraseña: '***' })
       const result = await this.client.query(
-        'INSERT INTO usuarios (nombre, apellido, email, contraseña) VALUES ($1, $2, $3, $4) RETURNING *',
-        [usuario.nombre, usuario.apellido, usuario.email, usuario.contraseña]
+        'INSERT INTO usuarios (nombre, apellido, email, contraseña, rol) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [usuario.nombre, usuario.apellido, usuario.email, usuario.contraseña, usuario.rol || 'user']
       )
       console.log('Usuario created with id:', result.rows[0].id)
       return result.rows[0]

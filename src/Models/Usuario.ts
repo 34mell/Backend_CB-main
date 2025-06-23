@@ -4,5 +4,6 @@ interface Usuario {
   id: number;
   email: string;
   contraseña: string;
+  rol?: 'user' | 'admin';
 }
 export type { Usuario as default };
