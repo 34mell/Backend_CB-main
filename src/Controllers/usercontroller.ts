@@ -12,8 +12,8 @@ const usuariosRepository = new UsuariosRepository();
 
 export const register = async (req: any, res: any) => {
   try {
-    const { nombre, apellido, email, password, rol } = req.body;
-    console.log('Received registration request:', { nombre, apellido, email, password: '***', rol });
+    const { nombre, apellido, email, password } = req.body;
+    console.log('Received registration request:', { nombre, apellido, email, password: '***' });
 
     // Validate required fields
     if (!nombre || !apellido || !email || !password) {
@@ -34,10 +34,6 @@ export const register = async (req: any, res: any) => {
       });
     }
     
-    // Validar que el rol sea válido si se proporciona
-    if (rol && !['user', 'admin'].includes(rol)) {
-      return res.status(400).json({ message: "El rol debe ser 'user' o 'admin'" });
-    }
 
     // Check if user already exists in DB
     const existingUsers = await usuariosRepository.getUsuarios();
@@ -56,13 +52,11 @@ export const register = async (req: any, res: any) => {
       nombre,
       apellido,
       email,
-      contraseña: hashedPassword,
-      rol: rol || 'user',
+      contraseña: hashedPassword
     });
     console.log('User created successfully:', { id: newUser.id, email: newUser.email });    // Create and return JWT token - incluir el rol en el token
     const token = jwt.sign({ 
-      id: newUser.id,
-      rol: newUser.rol || 'user'
+      id: newUser.id
     }, JWT_SECRET, { expiresIn: "1h" });
 
     res.status(201).json({
@@ -71,8 +65,7 @@ export const register = async (req: any, res: any) => {
         id: newUser.id,
         firstName: newUser.nombre,
         lastName: newUser.apellido,
-        email: newUser.email,
-        rol: newUser.rol || 'user',
+        email: newUser.email
       },
     });
   } catch (error) {
